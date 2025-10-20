@@ -13,13 +13,13 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-const STEPS = [
+const SPIN_STEPS = [
   { emoji: "📝", label: "Add options" },
-  { emoji: "🏁", label: "Watch race" },
+  { emoji: "🍾", label: "Spin the bottle" },
   { emoji: "🎉", label: "Get answer" },
 ] as const;
 
-export default function HomeScreen() {
+export default function BottleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const backgroundSecondaryColor = useThemeColor({}, "backgroundSecondary");
@@ -37,7 +37,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={[styles.container]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Pressable
             onPress={() => router.push("/history-modal")}
@@ -57,17 +57,17 @@ export default function HomeScreen() {
 
         <View style={styles.mainContent}>
           <View style={styles.emojiRow}>
-            <Text style={styles.emoji}>🏇</Text>
-            <Text style={styles.emoji}>🏁</Text>
+            <Text style={styles.emoji}>🍾</Text>
+            <Text style={styles.emoji}>🎯</Text>
           </View>
           <Text style={[styles.title, { color: tintColor }]}>
             Decision Derby
           </Text>
           <Text style={[styles.subtitle, { color: textSecondaryColor }]}>
-            Let the horses decide your fate!
+            Let the bottle decide your fate!
           </Text>
           <View style={styles.stepsRow}>
-            {STEPS.map((step) => (
+            {SPIN_STEPS.map((step) => (
               <View key={step.label} style={styles.stepItem}>
                 <View
                   style={[
@@ -89,7 +89,7 @@ export default function HomeScreen() {
           <Button
             onPress={() => router.push("/create")}
             disabled={false}
-            title="🏇  Start a Race"
+            title="🍾  Spin the Bottle"
             style={[styles.startButton]}
           />
         </View>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
   },
   iconButton: {
     width: 48,
