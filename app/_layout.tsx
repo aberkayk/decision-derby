@@ -55,12 +55,20 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(tabs)"
+          options={{ headerShown: false, headerTitle: "" }}
+        />
         <Stack.Screen
           name="history-modal"
           options={{ presentation: "modal" }}
         />
-        <Stack.Screen name="create" />
+        <Stack.Screen
+          name="create"
+          options={{
+            headerTitle: "Make a Decision",
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

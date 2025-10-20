@@ -27,14 +27,6 @@ export default function HomeScreen() {
   const tintColor = useThemeColor({}, "tint");
   const buttonColor = useThemeColor({}, "button");
 
-  // const handleStartRace = () => {
-  //   router.push("/race");
-  // };
-
-  // const handleViewHistory = () => {
-  //   router.push("/history-modal");
-  // };
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.container]}>
@@ -58,7 +50,6 @@ export default function HomeScreen() {
         <View style={styles.mainContent}>
           <View style={styles.emojiRow}>
             <Text style={styles.emoji}>🏇</Text>
-            <Text style={styles.emoji}>🏁</Text>
           </View>
           <Text style={[styles.title, { color: tintColor }]}>
             Decision Derby
@@ -87,9 +78,14 @@ export default function HomeScreen() {
 
         <View style={styles.startButtonWrapper}>
           <Button
-            onPress={() => router.push("/create")}
+            onPress={() =>
+              router.push({
+                pathname: "/create",
+                params: { variant: "horse", transition: "race" },
+              })
+            }
             disabled={false}
-            title="🏇  Start a Race"
+            title="Start a Race"
             style={[styles.startButton]}
           />
         </View>
@@ -126,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 72,
     marginHorizontal: 12,
   },
   title: {

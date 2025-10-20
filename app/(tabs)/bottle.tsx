@@ -8,10 +8,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet } from "react-native";
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const SPIN_STEPS = [
   { emoji: "📝", label: "Add options" },
@@ -21,19 +18,10 @@ const SPIN_STEPS = [
 
 export default function BottleScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const backgroundSecondaryColor = useThemeColor({}, "backgroundSecondary");
   const textSecondaryColor = useThemeColor({}, "textSecondary");
   const tintColor = useThemeColor({}, "tint");
   const buttonColor = useThemeColor({}, "button");
-
-  // const handleStartRace = () => {
-  //   router.push("/race");
-  // };
-
-  // const handleViewHistory = () => {
-  //   router.push("/history-modal");
-  // };
 
   return (
     <SafeAreaProvider>
@@ -58,7 +46,6 @@ export default function BottleScreen() {
         <View style={styles.mainContent}>
           <View style={styles.emojiRow}>
             <Text style={styles.emoji}>🍾</Text>
-            <Text style={styles.emoji}>🎯</Text>
           </View>
           <Text style={[styles.title, { color: tintColor }]}>
             Decision Derby
@@ -87,9 +74,14 @@ export default function BottleScreen() {
 
         <View style={styles.startButtonWrapper}>
           <Button
-            onPress={() => router.push("/create")}
+            onPress={() =>
+              router.push({
+                pathname: "/create",
+                params: { variant: "bottle", transition: "spin" },
+              })
+            }
             disabled={false}
-            title="🍾  Spin the Bottle"
+            title="Spin the Bottle"
             style={[styles.startButton]}
           />
         </View>
@@ -106,7 +98,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
   },
   iconButton: {
     width: 48,
@@ -126,7 +118,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 72,
     marginHorizontal: 12,
   },
   title: {

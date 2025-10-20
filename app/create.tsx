@@ -7,8 +7,8 @@ import {
   useThemeColor,
 } from "@/components/Themed";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -19,7 +19,24 @@ export interface DecisionOption {
   emoji: string;
 }
 
-const HORSE_COLORS = [
+type CreateVariant = "horse" | "bottle";
+
+type ColorPreset = {
+  label: string;
+  hex: string;
+};
+
+type VariantConfig = {
+  variant: CreateVariant;
+  questionLabel: string;
+  questionPlaceholder: string;
+  optionsLabel: string;
+  buttonLabel: string;
+  colors: readonly ColorPreset[];
+  emojis: readonly string[];
+};
+
+const HORSE_COLORS: readonly ColorPreset[] = [
   { label: "Deep Red", hex: "#D62828" },
   { label: "Royal Blue", hex: "#0077B6" },
   { label: "Emerald", hex: "#2D6A4F" },
@@ -30,13 +47,86 @@ const HORSE_COLORS = [
   { label: "Golden Yellow", hex: "#FCA311" },
 ] as const;
 
+const BOTTLE_COLORS: readonly ColorPreset[] = [
+  { label: "Berry Punch", hex: "#9B5DE5" },
+  { label: "Citrus Fizz", hex: "#F15BB5" },
+  { label: "Lime Twist", hex: "#00BB72" },
+  { label: "Ocean Mist", hex: "#00BBF9" },
+  { label: "Peach Bellini", hex: "#FF9F1C" },
+  { label: "Cranberry Splash", hex: "#EF476F" },
+  { label: "Mint Cooler", hex: "#06D6A0" },
+  { label: "Grape Soda", hex: "#7F2CCB" },
+] as const;
+
 const HORSE_EMOJIS = ["🏇", "🐎", "🦄", "🐴", "🎠", "⚡", "🌟", "💫"] as const;
+const BOTTLE_EMOJIS = ["🍹", "🥂", "🍸", "🍻", "🍷", "🍾", "🎯", "🎉"] as const;
+
+const VARIANT_CONFIG: Record<CreateVariant, VariantConfig> = {
+  horse: {
+    variant: "horse",
+    questionLabel: "What should the race decide?",
+    questionPlaceholder: "e.g., Which idea crosses the finish line?",
+    optionsLabel: "Race options",
+    buttonLabel: "🏁  Start Race!",
+    colors: HORSE_COLORS,
+    emojis: HORSE_EMOJIS,
+  },
+  bottle: {
+    variant: "bottle",
+    questionLabel: "What should the bottle decide?",
+    questionPlaceholder: "e.g., Who takes the next dare?",
+    optionsLabel: "Spin options",
+    buttonLabel: "🍾  Spin the Bottle!",
+    colors: BOTTLE_COLORS,
+    emojis: BOTTLE_EMOJIS,
+  },
+};
+
+const FALLBACK_COLOR = HORSE_COLORS[0];
+const FALLBACK_EMOJI = HORSE_EMOJIS[0];
 
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 8;
 
+function resolveVariant(value: string | string[] | undefined): CreateVariant {
+  const normalized = Array.isArray(value) ? value[0] : value;
+  return normalized === "bottle" ? "bottle" : "horse";
+}
+
+function buildInitialOptions(config: VariantConfig): DecisionOption[] {
+  const firstColor = config.colors[0] ?? FALLBACK_COLOR;
+  const secondColor = config.colors[1] ?? config.colors[0] ?? FALLBACK_COLOR;
+  const firstEmoji = config.emojis[0] ?? FALLBACK_EMOJI;
+  const secondEmoji = config.emojis[1] ?? config.emojis[0] ?? FALLBACK_EMOJI;
+
+  return [
+    {
+      id: "1",
+      text: "",
+      color: firstColor.hex,
+      emoji: firstEmoji,
+    },
+    {
+      id: "2",
+      text: "",
+      color: secondColor.hex,
+      emoji: secondEmoji,
+    },
+  ];
+}
+
 export default function CreateScreen() {
   const router = useRouter();
+  const { variant: variantParam, transition: transitionParam } =
+    useLocalSearchParams<{
+      variant?: string | string[];
+      transition?: string | string[];
+    }>();
+  const variant = resolveVariant(variantParam);
+  const transition = Array.isArray(transitionParam)
+    ? transitionParam[0]
+    : transitionParam;
+  const variantConfig = VARIANT_CONFIG[variant];
   const backgroundColor = useThemeColor({}, "background");
   const backgroundSecondary = useThemeColor({}, "backgroundSecondary");
   const textColor = useThemeColor({}, "text");
@@ -44,35 +134,39 @@ export default function CreateScreen() {
   const borderColor = useThemeColor({}, "border");
   const buttonColor = useThemeColor({}, "button");
 
+  // Set a transition-based emoji for visual feedback
+  const transitionEmoji =
+    transition === "spin" ? "🍾" : transition === "race" ? "🏇" : "🎲";
+
   const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState<DecisionOption[]>([
-    {
-      id: "1",
-      text: "",
-      color: HORSE_COLORS[0].hex,
-      emoji: HORSE_EMOJIS[0],
-    },
-    {
-      id: "2",
-      text: "",
-      color: HORSE_COLORS[1].hex,
-      emoji: HORSE_EMOJIS[1],
-    },
-  ]);
+  const [options, setOptions] = useState<DecisionOption[]>(() =>
+    buildInitialOptions(variantConfig)
+  );
+
+  useEffect(() => {
+    setQuestion("");
+    setOptions(buildInitialOptions(variantConfig));
+  }, [variantConfig]);
 
   const addOption = () => {
     if (options.length >= MAX_OPTIONS) {
       return;
     }
 
-    const nextIndex = options.length % HORSE_COLORS.length;
-    const nextEmojiIndex = options.length % HORSE_EMOJIS.length;
+    const colors = variantConfig.colors.length
+      ? variantConfig.colors
+      : [FALLBACK_COLOR];
+    const emojis = variantConfig.emojis.length
+      ? variantConfig.emojis
+      : [FALLBACK_EMOJI];
+    const nextIndex = options.length % colors.length;
+    const nextEmojiIndex = options.length % emojis.length;
 
     const newOption: DecisionOption = {
       id: Date.now().toString(),
       text: "",
-      color: HORSE_COLORS[nextIndex].hex,
-      emoji: HORSE_EMOJIS[nextEmojiIndex],
+      color: colors[nextIndex]?.hex ?? FALLBACK_COLOR.hex,
+      emoji: emojis[nextEmojiIndex] ?? FALLBACK_EMOJI,
     };
     setOptions((prev) => [...prev, newOption]);
   };
@@ -107,14 +201,19 @@ export default function CreateScreen() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.safeArea]}>
+        <View style={styles.header}>
+          <Text style={[styles.transitionEmoji, { color: buttonColor }]}>
+            {transitionEmoji}
+          </Text>
+        </View>
         <View style={styles.section}>
           <Text style={[styles.label, { color: textColor }]}>
-            What can&apos;t you decide?
+            {variantConfig.questionLabel}
           </Text>
           <TextInput
             value={question}
             onChangeText={setQuestion}
-            placeholder="e.g., What should we eat?"
+            placeholder={variantConfig.questionPlaceholder}
             placeholderTextColor={placeholderColor}
             style={[
               styles.input,
@@ -132,7 +231,7 @@ export default function CreateScreen() {
         >
           <View style={styles.section}>
             <Text style={[styles.label, { color: textColor }]}>
-              Options (Add 2-8 choices)
+              {variantConfig.optionsLabel}
             </Text>
             {options.map((option, index) => (
               <View
@@ -219,7 +318,7 @@ export default function CreateScreen() {
 
         <View style={styles.footer}>
           <Button
-            title="🏁  Start Race!"
+            title={variantConfig.buttonLabel}
             onPress={handleStartRace}
             disabled={!isValid}
             style={[
@@ -240,6 +339,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  header: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  transitionEmoji: {
+    fontSize: 32,
+  },
   iconButton: {
     width: 44,
     height: 44,
@@ -248,7 +354,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
   },
-
   scrollContent: {
     paddingBottom: 24,
   },
@@ -274,7 +379,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   optionBadge: {
     width: 44,
@@ -305,7 +410,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     paddingVertical: 14,
-    marginTop: 8,
   },
   addOptionText: {
     marginLeft: 8,
