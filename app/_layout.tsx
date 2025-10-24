@@ -69,6 +69,12 @@ function RootLayoutNav() {
             headerTitle: "Make a Decision",
           }}
         />
+        <Stack.Screen
+          name="spin"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

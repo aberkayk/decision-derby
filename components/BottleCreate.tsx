@@ -81,7 +81,12 @@ const BottleCreate = () => {
 
   const handleStartSpin = () => {
     if (!isValid) return;
-    // router.push("/spin");
+    router.push({
+      pathname: "/spin",
+      params: {
+        options: JSON.stringify(options),
+      },
+    });
   };
 
   const isValid =
@@ -265,8 +270,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
-    borderWidth: 2,
-    borderColor: "#ffffff",
   },
   optionInput: {
     flex: 1,

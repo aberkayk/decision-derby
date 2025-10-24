@@ -16,7 +16,7 @@ export default {
   },
   dark: {
     text: "#FFFFFF", // White text
-    textSecondary: "#e8e9eb", // Muted gray
+    textSecondary: "#e8e9ebb1", // Muted gray
     background: "#050a1c", // Deep Navy background
     backgroundSecondary: "#14213D", // Slightly lighter navy
     button: "#FCA311", // Turf Green
